@@ -3,3 +3,4 @@ data/raw/
 data/processed/matches_with_elo.csv
 __pycache__/
 *.pyc
+src/wcsim.egg-info/
