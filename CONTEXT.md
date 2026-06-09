@@ -31,7 +31,7 @@ _Avoid_: home advantage "for hosts" unqualified — it is venue-conditional, not
 Drawn after 90' → extra time simulated as Poisson at one-third of each side's λ → if still level, penalties as a fair coin flip.
 
 **Backtest**:
-Rerunning the full pipeline with Elo frozen at a past World Cup's kickoff (2018, 2022) and comparing predicted Stage Probabilities to actual outcomes. The only role historical World Cup data plays — it is never a model input (Elo already encodes it).
+Rerunning the full pipeline with Elo frozen at a past tournament's kickoff and comparing predicted Stage Probabilities to actual outcomes — fully out-of-sample (parameters refit on pre-tournament data, baseline from prior editions of the same competition). Nine editions: WC 2018/2022, Euro 2016/2020/2024, Copa América 2016/2019/2021/2024. The Euro editions matter most: their best-thirds advancement is the closest analogue to 2026's format. History is never a model input (Elo already encodes it).
 _Avoid_: pedigree, tournament experience (rejected as model inputs)
 
 **Tiebreak Cascade**:

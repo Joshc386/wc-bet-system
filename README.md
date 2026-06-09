@@ -58,10 +58,17 @@ Tests (the model core is TDD with fixed-seed regression locks):
 - Replica Elo vs eloratings.net: Spearman rank correlation 0.979 across the 48
   qualified teams (absolute levels differ by a near-affine offset that the
   calibrated slope absorbs — see ADR-0001).
-- Frozen-Elo backtests, fully out-of-sample: beats the base-rate Brier score on
-  6 of 8 stage/year combinations (2018 + 2022), average improvement +12.4%.
-  2022 champion Argentina was ranked 2nd pre-tournament; 2018 champion France
-  6th. Known caveat: pure-Elo models concentrate more probability on top
+- Frozen-Elo backtests over **nine tournaments** (WC 2018/2022, Euro
+  2016/2020/2024, Copa América 2016/2019/2021/2024), fully out-of-sample
+  (Elo frozen at kickoff, parameters refit on pre-tournament data, baseline
+  from prior editions of the same competition): overall Brier skill **+25.5%**
+  vs the base-rate forecast, positive at every stage (R16 +21%, QF +26%,
+  SF +27%, Final +33%, Champion +16%). Every eventual champion was ranked in
+  the model's pre-tournament top 6 (ranks: 6, 2, 5, 5, 3, 5, 1, 2, 1). The
+  Euro editions specifically validate the best-thirds advancement machinery
+  that the 2026 format uses. Per-edition results: `data/processed/
+  backtest_<edition>.csv`, summary in `backtest_summary.csv`.
+  Known caveat: pure-Elo models concentrate more probability on top
   favourites than the market does (no rating-uncertainty shrinkage).
 
 ## Layout

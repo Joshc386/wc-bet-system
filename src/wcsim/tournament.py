@@ -1,4 +1,4 @@
-"""Monte Carlo simulation of the 2026 World Cup.
+"""Format-driven Monte Carlo tournament simulator (2026 World Cup + backtests).
 
 All stages are vectorized across simulations. Group ranking uses an integer
 sort key (points, GD, GF) with a pairwise head-to-head bonus layer that only
@@ -6,9 +6,15 @@ activates between teams tied on all three — for multi-way ties this reduces
 to FIFA's "points among tied teams" criterion — then a random component
 standing in for fair play/lots (see CONTEXT.md: Tiebreak Cascade).
 
-Third-place allocation: the 8 best thirds are matched to the bracket's
-T-slots by deterministic backtracking against the eligibility lists in
-bracket.json, memoized per qualified-combination (ADR-0003).
+Best-third allocation: qualified thirds are matched to the bracket's
+T-slots by deterministic backtracking against eligibility lists, memoized
+per qualified-combination (ADR-0003).
+
+Slot grammar in brackets: "W:g" group winner, "R:g" runner-up,
+"P:k:g" k-th place of group g (direct, no qualification), "T:<groups>"
+best-third slot with eligible groups, "M:n" winner of match n.
+Host bonus rule (uniform across editions, incl. multi-host Euro 2020):
++100 Elo iff the team's name equals the match venue's country.
 """
 
 import json
@@ -22,7 +28,7 @@ from wcsim.match_sim import knockout_winner, sample_dc
 
 ROOT = Path(__file__).resolve().parents[2]
 HOST_BONUS = 100.0
-HOSTS = {"United States", "Mexico", "Canada"}
+DEFAULT_STAGES = ["R32", "R16", "QF", "SF", "Final", "Champion"]
 
 # sort-key strata: points, GD (+100 offset), GF, h2h bonus, random
 _K_PTS, _K_GD, _K_GF, _K_H2H, _K_RND = 10**13, 10**10, 10**7, 10**4, 10**2
@@ -36,9 +42,6 @@ def load_inputs(data_dir: Path | None = None) -> dict:
     ratings = pd.read_csv(d / "processed/current_ratings.csv", index_col="team")["elo"]
     params = json.loads((d / "processed/params.json").read_text())
     teams = [t for g in sorted(groups) for t in groups[g]]
-    third_slot_groups = [
-        s["away"][2:] for s in bracket["round_of_32"] if s["away"].startswith("T:")
-    ]
     return {
         "groups": groups,
         "schedule": schedule,
@@ -47,31 +50,45 @@ def load_inputs(data_dir: Path | None = None) -> dict:
         "teams": teams,
         "team_idx": {t: i for i, t in enumerate(teams)},
         "params": params,
-        "third_slot_groups": third_slot_groups,
+        "third_slot_groups": third_slots(bracket),
+        "stages": DEFAULT_STAGES,
     }
+
+
+def third_slots(bracket: dict) -> list[str]:
+    """Eligible-group strings of every T-slot, in bracket order."""
+    return [
+        side[2:]
+        for rnd in bracket.values()
+        if isinstance(rnd, list)
+        for m in rnd
+        for side in (m["home"], m["away"])
+        if side.startswith("T:")
+    ]
 
 
 def _effective_diff(home: str, away: str, host_country: str, elo: np.ndarray, idx: dict) -> float:
     d = elo[idx[home]] - elo[idx[away]]
-    if home in HOSTS and home == host_country:
+    if home == host_country:
         d += HOST_BONUS
-    if away in HOSTS and away == host_country:
+    if away == host_country:
         d -= HOST_BONUS
     return float(d)
 
 
 def allocation_for_mask(qualified: frozenset, third_slot_groups: list[str]) -> tuple:
-    """Deterministically assign 8 qualified third-place groups (ints 0-11) to
-    the 8 T-slots, respecting eligibility. Most-constrained slot first."""
+    """Deterministically assign the qualified third-place groups (ints) to
+    the T-slots, respecting eligibility. Most-constrained slot first."""
+    n_slots = len(third_slot_groups)
     eligible = [
         sorted(ord(c) - 65 for c in s if (ord(c) - 65) in qualified)
         for s in third_slot_groups
     ]
-    order = sorted(range(8), key=lambda i: len(eligible[i]))
+    order = sorted(range(n_slots), key=lambda i: len(eligible[i]))
     assignment: dict[int, int] = {}
 
     def backtrack(k: int, used: set) -> bool:
-        if k == 8:
+        if k == n_slots:
             return True
         slot = order[k]
         for g in eligible[slot]:
@@ -84,14 +101,15 @@ def allocation_for_mask(qualified: frozenset, third_slot_groups: list[str]) -> t
 
     if not backtrack(0, set()):
         raise ValueError(f"No valid third-place allocation for {sorted(qualified)}")
-    return tuple(assignment[i] for i in range(8))
+    return tuple(assignment[i] for i in range(n_slots))
 
 
 def _rank_groups(
     inputs: dict, gh: np.ndarray, ga: np.ndarray, rng: np.random.Generator, n: int
-) -> tuple[np.ndarray, np.ndarray, np.ndarray, np.ndarray, np.ndarray]:
-    """Returns (winner, runner, third) team-index arrays of shape (12, n) and
-    the thirds' (pts, gd, gf) base key for cross-group ranking."""
+) -> tuple[np.ndarray, np.ndarray]:
+    """Returns (ranked, pos_base): ranked[g, k] is the team index at position
+    k of group g per sim, shape (n_groups, group_size, n); pos_base is the
+    (pts, GD, GF) base key at each position, for cross-group third ranking."""
     sched = inputs["schedule"]
     idx = inputs["team_idx"]
     n_teams = len(inputs["teams"])
@@ -110,17 +128,16 @@ def _rank_groups(
 
     group_letters = sorted(inputs["groups"])
     n_groups = len(group_letters)
-    winner = np.empty((n_groups, n), dtype=np.int64)
-    runner = np.empty((n_groups, n), dtype=np.int64)
-    third = np.empty((n_groups, n), dtype=np.int64)
-    third_base = np.empty((n_groups, n), dtype=np.int64)
+    size = len(inputs["groups"][group_letters[0]])
+    ranked = np.empty((n_groups, size, n), dtype=np.int64)
+    pos_base = np.empty((n_groups, size, n), dtype=np.int64)
     for gi, letter in enumerate(group_letters):
         members = [idx[t] for t in inputs["groups"][letter]]
         base = np.stack(
             [pts[t] * _K_PTS + (gd[t] + 100) * _K_GD + gf[t] * _K_GF for t in members]
         )
         # head-to-head bonus among teams tied on (pts, GD, GF)
-        h2h = np.zeros((4, n), dtype=np.int64)
+        h2h = np.zeros((size, n), dtype=np.int64)
         gmask = (
             (sched["home_team"].map(idx).isin(members))
             & (sched["away_team"].map(idx).isin(members))
@@ -132,36 +149,34 @@ def _rank_groups(
             hg, ag = gh[f], ga[f]
             h2h[i] += tied * np.where(hg > ag, 3, np.where(hg == ag, 1, 0))
             h2h[j] += tied * np.where(ag > hg, 3, np.where(hg == ag, 1, 0))
-        key = base + h2h * _K_H2H + rng.integers(0, 100, size=(4, n)) * _K_RND
+        key = base + h2h * _K_H2H + rng.integers(0, 100, size=(size, n)) * _K_RND
         order = np.argsort(-key, axis=0, kind="stable")
-        marr = np.array(members)
-        winner[gi] = marr[order[0]]
-        runner[gi] = marr[order[1]]
-        third[gi] = marr[order[2]]
-        third_base[gi] = np.take_along_axis(base, order[2][None, :], axis=0)[0]
-    return winner, runner, third, third_base, pts
+        ranked[gi] = np.array(members)[order]
+        pos_base[gi] = np.take_along_axis(base, order, axis=0)
+    return ranked, pos_base
 
 
 def _qualify_thirds(
-    third_base: np.ndarray, rng: np.random.Generator, n: int
+    third_base: np.ndarray, n_qualify: int, rng: np.random.Generator, n: int
 ) -> np.ndarray:
-    """Boolean (12, n): which groups' thirds are among the best 8."""
-    key = third_base + rng.integers(0, 100, size=(12, n)) * _K_RND
+    """Boolean (n_groups, n): which groups' thirds are among the best n_qualify."""
+    key = third_base + rng.integers(0, 100, size=third_base.shape) * _K_RND
     order = np.argsort(-key, axis=0, kind="stable")
-    qualified = np.zeros((12, n), dtype=bool)
-    np.put_along_axis(qualified, order[:8], True, axis=0)
+    qualified = np.zeros(third_base.shape, dtype=bool)
+    np.put_along_axis(qualified, order[:n_qualify], True, axis=0)
     return qualified
 
 
 def run_tournament(inputs: dict, n_sims: int, seed: int) -> pd.DataFrame:
     rng = np.random.default_rng(seed)
     p = inputs["params"]
-    alpha_wc = float(np.log(p["wc_baseline"] / 2.0))
+    alpha_t = float(np.log(p.get("baseline", p.get("wc_baseline")) / 2.0))
     beta, rho = p["beta"], p["rho"]
     elo, idx, teams = inputs["elo"], inputs["team_idx"], inputs["teams"]
+    stages = inputs["stages"]
     n = n_sims
 
-    # --- group stage: 72 fixtures, fixed λs per fixture ---
+    # --- group stage: fixed λs per fixture ---
     sched = inputs["schedule"]
     diffs = np.array(
         [
@@ -169,66 +184,66 @@ def run_tournament(inputs: dict, n_sims: int, seed: int) -> pd.DataFrame:
             for _, r in sched.iterrows()
         ]
     )
-    lh = np.repeat(np.exp(alpha_wc + beta * diffs), n)
-    la = np.repeat(np.exp(alpha_wc - beta * diffs), n)
+    lh = np.repeat(np.exp(alpha_t + beta * diffs), n)
+    la = np.repeat(np.exp(alpha_t - beta * diffs), n)
     h, a = sample_dc(lh, la, rho, rng)
     gh = h.reshape(len(sched), n)
     ga = a.reshape(len(sched), n)
 
-    winner, runner, third, third_base, _ = _rank_groups(inputs, gh, ga, rng, n)
-    qualified = _qualify_thirds(third_base, rng, n)
+    ranked, pos_base = _rank_groups(inputs, gh, ga, rng, n)
+    n_groups = ranked.shape[0]
 
-    # --- third-place slot allocation, memoized over the ≤495 combinations ---
+    # --- best-third qualification + slot allocation (if format has T-slots) ---
     slot_groups = inputs["third_slot_groups"]
-    masks = (qualified * (1 << np.arange(12))[:, None]).sum(axis=0)
-    cached = lru_cache(maxsize=None)(
-        lambda m: allocation_for_mask(
-            frozenset(g for g in range(12) if m >> g & 1), slot_groups
+    if slot_groups:
+        qualified = _qualify_thirds(pos_base[:, 2], len(slot_groups), rng, n)
+        masks = (qualified * (1 << np.arange(n_groups))[:, None]).sum(axis=0)
+        cached = lru_cache(maxsize=None)(
+            lambda m: allocation_for_mask(
+                frozenset(g for g in range(n_groups) if m >> g & 1), slot_groups
+            )
         )
-    )
-    slot_third = np.empty((8, n), dtype=np.int64)  # group index per T-slot per sim
-    for m in np.unique(masks):
-        sel = masks == m
-        for s, g in enumerate(cached(int(m))):
-            slot_third[s, sel] = g
+        slot_third = np.empty((len(slot_groups), n), dtype=np.int64)
+        for m in np.unique(masks):
+            sel = masks == m
+            for s, g in enumerate(cached(int(m))):
+                slot_third[s, sel] = g
 
     # --- knockout bracket ---
-    group_no = {chr(65 + i): i for i in range(12)}
+    group_no = {chr(65 + i): i for i in range(n_groups)}
     match_winner: dict[int, np.ndarray] = {}
     t_slot_counter = [0]
+    sims = np.arange(n)
 
     def resolve(ref: str) -> np.ndarray:
-        kind, val = ref.split(":")
+        parts = ref.split(":")
+        kind = parts[0]
         if kind == "W":
-            return winner[group_no[val]]
+            return ranked[group_no[parts[1]], 0]
         if kind == "R":
-            return runner[group_no[val]]
+            return ranked[group_no[parts[1]], 1]
+        if kind == "P":
+            return ranked[group_no[parts[2]], int(parts[1]) - 1]
         if kind == "M":
-            return match_winner[int(val)]
+            return match_winner[int(parts[1])]
         s = t_slot_counter[0]
         t_slot_counter[0] += 1
-        return third[slot_third[s], np.arange(n)]
+        return ranked[slot_third[s], 2, sims]
 
-    reached = {st: np.zeros((48, n), dtype=bool) for st in
-               ["R32", "R16", "QF", "SF", "Final", "Champion"]}
-    rounds = [
-        ("round_of_32", "R16"), ("round_of_16", "QF"), ("quarter_finals", "SF"),
-        ("semi_finals", "Final"), ("final", "Champion"),
-    ]
-    sims = np.arange(n)
-    for round_key, win_stage in rounds:
+    reached = {st: np.zeros((len(teams), n), dtype=bool) for st in stages}
+    round_keys = [k for k, v in inputs["bracket"].items() if isinstance(v, list)]
+    for round_key, win_stage in zip(round_keys, stages[1:]):
         for m in inputs["bracket"][round_key]:
             home, away = resolve(m["home"]), resolve(m["away"])
-            if round_key == "round_of_32":
-                reached["R32"][home, sims] = True
-                reached["R32"][away, sims] = True
+            if round_key == round_keys[0]:
+                reached[stages[0]][home, sims] = True
+                reached[stages[0]][away, sims] = True
             d = elo[home] - elo[away]
             hc = m["host_country"]
-            for t in HOSTS & set(teams):
-                if t == hc:
-                    d = d + HOST_BONUS * (home == idx[t]) - HOST_BONUS * (away == idx[t])
-            lh = np.exp(alpha_wc + beta * d)
-            la = np.exp(alpha_wc - beta * d)
+            if hc in idx:
+                d = d + HOST_BONUS * (home == idx[hc]) - HOST_BONUS * (away == idx[hc])
+            lh = np.exp(alpha_t + beta * d)
+            la = np.exp(alpha_t - beta * d)
             first_wins = knockout_winner(lh, la, rho, rng)
             w = np.where(first_wins, home, away)
             match_winner[m["match"]] = w
@@ -237,4 +252,4 @@ def run_tournament(inputs: dict, n_sims: int, seed: int) -> pd.DataFrame:
     out = pd.DataFrame(
         {st: reached[st].mean(axis=1) for st in reached}, index=pd.Index(teams, name="team")
     )
-    return out.sort_values("Champion", ascending=False)
+    return out.sort_values(stages[-1], ascending=False)
