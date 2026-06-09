@@ -1,0 +1,8 @@
+{
+  "alpha": 0.17625180336613958,
+  "beta": 0.0018553077787444338,
+  "rho": -0.04581848191939781,
+  "wc_baseline": 2.56640625,
+  "n_calibration_matches": 15790,
+  "n_wc_baseline_matches": 256
+}

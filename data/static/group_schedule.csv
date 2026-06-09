@@ -1,0 +1,73 @@
+match_group,date,home_team,away_team,city,host_country
+A,2026-06-11,Mexico,South Africa,Mexico City,Mexico
+A,2026-06-11,South Korea,Czech Republic,Zapopan,Mexico
+B,2026-06-12,Canada,Bosnia and Herzegovina,Toronto,Canada
+D,2026-06-12,United States,Paraguay,Inglewood,United States
+B,2026-06-13,Qatar,Switzerland,Santa Clara,United States
+C,2026-06-13,Brazil,Morocco,East Rutherford,United States
+C,2026-06-13,Haiti,Scotland,Foxborough,United States
+D,2026-06-13,Australia,Turkey,Vancouver,Canada
+E,2026-06-14,Germany,Curaçao,Houston,United States
+E,2026-06-14,Ivory Coast,Ecuador,Philadelphia,United States
+F,2026-06-14,Netherlands,Japan,Arlington,United States
+F,2026-06-14,Sweden,Tunisia,Guadalupe,Mexico
+G,2026-06-15,Belgium,Egypt,Seattle,United States
+G,2026-06-15,Iran,New Zealand,Inglewood,United States
+H,2026-06-15,Spain,Cape Verde,Atlanta,United States
+H,2026-06-15,Saudi Arabia,Uruguay,Miami Gardens,United States
+I,2026-06-16,France,Senegal,East Rutherford,United States
+I,2026-06-16,Iraq,Norway,Foxborough,United States
+J,2026-06-16,Argentina,Algeria,Kansas City,United States
+J,2026-06-16,Austria,Jordan,Santa Clara,United States
+K,2026-06-17,Portugal,DR Congo,Houston,United States
+K,2026-06-17,Uzbekistan,Colombia,Mexico City,Mexico
+L,2026-06-17,England,Croatia,Arlington,United States
+L,2026-06-17,Ghana,Panama,Toronto,Canada
+A,2026-06-18,Czech Republic,South Africa,Atlanta,United States
+A,2026-06-18,Mexico,South Korea,Zapopan,Mexico
+B,2026-06-18,Switzerland,Bosnia and Herzegovina,Inglewood,United States
+B,2026-06-18,Canada,Qatar,Vancouver,Canada
+C,2026-06-19,Scotland,Morocco,Foxborough,United States
+C,2026-06-19,Brazil,Haiti,Philadelphia,United States
+D,2026-06-19,United States,Australia,Seattle,United States
+D,2026-06-19,Turkey,Paraguay,Santa Clara,United States
+E,2026-06-20,Germany,Ivory Coast,Toronto,Canada
+E,2026-06-20,Ecuador,Curaçao,Kansas City,United States
+F,2026-06-20,Netherlands,Sweden,Houston,United States
+F,2026-06-20,Tunisia,Japan,Guadalupe,Mexico
+G,2026-06-21,Belgium,Iran,Inglewood,United States
+G,2026-06-21,New Zealand,Egypt,Vancouver,Canada
+H,2026-06-21,Spain,Saudi Arabia,Atlanta,United States
+H,2026-06-21,Uruguay,Cape Verde,Miami Gardens,United States
+I,2026-06-22,France,Iraq,Philadelphia,United States
+I,2026-06-22,Norway,Senegal,East Rutherford,United States
+J,2026-06-22,Argentina,Austria,Arlington,United States
+J,2026-06-22,Jordan,Algeria,Santa Clara,United States
+K,2026-06-23,Portugal,Uzbekistan,Houston,United States
+K,2026-06-23,Colombia,DR Congo,Zapopan,Mexico
+L,2026-06-23,England,Ghana,Foxborough,United States
+L,2026-06-23,Panama,Croatia,Toronto,Canada
+A,2026-06-24,Mexico,Czech Republic,Mexico City,Mexico
+A,2026-06-24,South Africa,South Korea,Guadalupe,Mexico
+B,2026-06-24,Canada,Switzerland,Vancouver,Canada
+B,2026-06-24,Bosnia and Herzegovina,Qatar,Seattle,United States
+C,2026-06-24,Scotland,Brazil,Miami Gardens,United States
+C,2026-06-24,Morocco,Haiti,Atlanta,United States
+D,2026-06-25,United States,Turkey,Inglewood,United States
+D,2026-06-25,Paraguay,Australia,Santa Clara,United States
+E,2026-06-25,Curaçao,Ivory Coast,Philadelphia,United States
+E,2026-06-25,Ecuador,Germany,East Rutherford,United States
+F,2026-06-25,Japan,Sweden,Arlington,United States
+F,2026-06-25,Tunisia,Netherlands,Kansas City,United States
+G,2026-06-26,Egypt,Iran,Seattle,United States
+G,2026-06-26,New Zealand,Belgium,Vancouver,Canada
+H,2026-06-26,Cape Verde,Saudi Arabia,Houston,United States
+H,2026-06-26,Uruguay,Spain,Zapopan,Mexico
+I,2026-06-26,Norway,France,Foxborough,United States
+I,2026-06-26,Senegal,Iraq,Toronto,Canada
+J,2026-06-27,Algeria,Austria,Kansas City,United States
+J,2026-06-27,Jordan,Argentina,Arlington,United States
+K,2026-06-27,Colombia,Portugal,Miami Gardens,United States
+K,2026-06-27,DR Congo,Uzbekistan,Atlanta,United States
+L,2026-06-27,Panama,England,East Rutherford,United States
+L,2026-06-27,Croatia,Ghana,Philadelphia,United States

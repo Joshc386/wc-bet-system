@@ -1,0 +1,3 @@
+# Multiplicative λ split instead of the specced linear split
+
+The original spec split the baseline scoring rate linearly: λ_strong = (baseline + supremacy)/2, λ_weak = (baseline − supremacy)/2. With 48 teams, this tournament contains Elo gaps of 600+ points, where the linear form drives λ_weak negative — an invalid Poisson rate. We instead use λ_i = (baseline/2)·exp(±β·Elodiff), with β calibrated on the same historical internationals (2010+). Over the normal Elo range this agrees with the linear relationship the spec was based on; outside it, rates stay positive with sensible tails. A reader comparing code to the original brief should not "fix" this back to the linear form.

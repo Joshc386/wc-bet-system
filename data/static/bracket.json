@@ -1,0 +1,44 @@
+{
+  "_comment": "Slot grammar: 'W:<group>' group winner, 'R:<group>' runner-up, 'T:<groups>' third-place from one of the listed groups, 'M:<match>' winner of match number. host_country is where the venue physically is (drives the venue-conditional Host Bonus). Sources: Wikipedia 2026 FIFA World Cup knockout stage, cross-checked vs Sky Sports fixture list (matches 74, 79) and internal-coherence checks (all 12 winners + 12 runners-up appear exactly once; R16 consumes W73..W88 exactly once).",
+  "round_of_32": [
+    {"match": 73, "home": "R:A", "away": "R:B", "date": "2026-06-28", "city": "Inglewood", "host_country": "United States"},
+    {"match": 74, "home": "W:E", "away": "T:ABCDF", "date": "2026-06-29", "city": "Foxborough", "host_country": "United States"},
+    {"match": 75, "home": "W:F", "away": "R:C", "date": "2026-06-29", "city": "Guadalupe", "host_country": "Mexico"},
+    {"match": 76, "home": "W:C", "away": "R:F", "date": "2026-06-29", "city": "Houston", "host_country": "United States"},
+    {"match": 77, "home": "W:I", "away": "T:CDFGH", "date": "2026-06-30", "city": "East Rutherford", "host_country": "United States"},
+    {"match": 78, "home": "R:E", "away": "R:I", "date": "2026-06-30", "city": "Arlington", "host_country": "United States"},
+    {"match": 79, "home": "W:A", "away": "T:CEFHI", "date": "2026-06-30", "city": "Mexico City", "host_country": "Mexico"},
+    {"match": 80, "home": "W:L", "away": "T:EHIJK", "date": "2026-07-01", "city": "Atlanta", "host_country": "United States"},
+    {"match": 81, "home": "W:D", "away": "T:BEFIJ", "date": "2026-07-01", "city": "Santa Clara", "host_country": "United States"},
+    {"match": 82, "home": "W:G", "away": "T:AEHIJ", "date": "2026-07-01", "city": "Seattle", "host_country": "United States"},
+    {"match": 83, "home": "R:K", "away": "R:L", "date": "2026-07-02", "city": "Toronto", "host_country": "Canada"},
+    {"match": 84, "home": "W:H", "away": "R:J", "date": "2026-07-02", "city": "Inglewood", "host_country": "United States"},
+    {"match": 85, "home": "W:B", "away": "T:EFGIJ", "date": "2026-07-02", "city": "Vancouver", "host_country": "Canada"},
+    {"match": 86, "home": "W:J", "away": "R:H", "date": "2026-07-03", "city": "Miami Gardens", "host_country": "United States"},
+    {"match": 87, "home": "W:K", "away": "T:DEIJL", "date": "2026-07-03", "city": "Kansas City", "host_country": "United States"},
+    {"match": 88, "home": "R:D", "away": "R:G", "date": "2026-07-03", "city": "Arlington", "host_country": "United States"}
+  ],
+  "round_of_16": [
+    {"match": 89, "home": "M:74", "away": "M:77", "date": "2026-07-04", "city": "Philadelphia", "host_country": "United States"},
+    {"match": 90, "home": "M:73", "away": "M:75", "date": "2026-07-04", "city": "Houston", "host_country": "United States"},
+    {"match": 91, "home": "M:76", "away": "M:78", "date": "2026-07-05", "city": "East Rutherford", "host_country": "United States"},
+    {"match": 92, "home": "M:79", "away": "M:80", "date": "2026-07-05", "city": "Mexico City", "host_country": "Mexico"},
+    {"match": 93, "home": "M:83", "away": "M:84", "date": "2026-07-06", "city": "Arlington", "host_country": "United States"},
+    {"match": 94, "home": "M:81", "away": "M:82", "date": "2026-07-06", "city": "Seattle", "host_country": "United States"},
+    {"match": 95, "home": "M:86", "away": "M:88", "date": "2026-07-07", "city": "Atlanta", "host_country": "United States"},
+    {"match": 96, "home": "M:85", "away": "M:87", "date": "2026-07-07", "city": "Vancouver", "host_country": "Canada"}
+  ],
+  "quarter_finals": [
+    {"match": 97, "home": "M:89", "away": "M:90", "date": "2026-07-09", "city": "Foxborough", "host_country": "United States"},
+    {"match": 98, "home": "M:93", "away": "M:94", "date": "2026-07-10", "city": "Inglewood", "host_country": "United States"},
+    {"match": 99, "home": "M:91", "away": "M:92", "date": "2026-07-11", "city": "Miami Gardens", "host_country": "United States"},
+    {"match": 100, "home": "M:95", "away": "M:96", "date": "2026-07-11", "city": "Kansas City", "host_country": "United States"}
+  ],
+  "semi_finals": [
+    {"match": 101, "home": "M:97", "away": "M:98", "date": "2026-07-14", "city": "Arlington", "host_country": "United States"},
+    {"match": 102, "home": "M:99", "away": "M:100", "date": "2026-07-15", "city": "Atlanta", "host_country": "United States"}
+  ],
+  "final": [
+    {"match": 104, "home": "M:101", "away": "M:102", "date": "2026-07-19", "city": "East Rutherford", "host_country": "United States"}
+  ]
+}

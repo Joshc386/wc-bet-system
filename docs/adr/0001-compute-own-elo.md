@@ -1,0 +1,8 @@
+# Compute our own Elo ratings rather than scrape published ones
+
+The Elo→goal-supremacy calibration regression needs Elo-at-match-time for thousands of historical internationals, and the slope is only valid if the simulation input comes from the same rating system it was calibrated on. eloratings.net publishes current ratings but not clean historical ones. We therefore replicate the World Football Elo formula (importance-based K, goal-margin multiplier, home advantage) over a full historical results dataset, producing both calibration data and current ratings from one engine. Friendlies (including June 2026 pre-tournament friendlies) update ratings naturally through this pipeline at their standard lower K weight.
+
+## Consequences
+
+- The historical results dataset must be current through the last pre-tournament fixtures (June 2026) or recent form is silently dropped. (Verified 2026-06-09: dataset current through 2026-06-08.)
+- **Outcome of the sanity check (2026-06-09):** the original ±25-point acceptance vs eloratings.net fails — our ratings run +52 to +169 hot, more for weaker teams, because we seed every team at 1500 in 1872 while eloratings seeds entrants lower. However, Spearman rank correlation across the 48 WC teams is 0.979 and the offset is approximately linear in rating, i.e. our scale is an affine transform of theirs. Because the Elo→goals slope β is calibrated on our own ratings and the simulation consumes the same ratings, a linear rescaling is absorbed exactly by β. We accept the engine on the criterion that actually matters (rank ordering + internal consistency) and deliberately do not tune seeding to match official absolute levels.
