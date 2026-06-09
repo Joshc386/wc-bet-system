@@ -1,0 +1,13 @@
+[project]
+name = "wcsim"
+version = "1.0.0"
+description = "World Cup 2026 tournament forecaster"
+requires-python = ">=3.11"
+dependencies = ["numpy", "pandas", "scipy", "tabulate"]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]

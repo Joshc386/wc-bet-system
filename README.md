@@ -28,17 +28,22 @@ domain language and `docs/adr/` for the key decisions.
 
 ```
 python -m venv .venv
-.venv\Scripts\pip install -r requirements.txt
+.venv\Scripts\pip install -e .
+```
+
+Run the forecast (optional args: n_sims, seed — defaults 100000, 2026):
+
+```
+.venv\Scripts\python -m wcsim.forecast        # writes FORECAST.md + stage_probabilities.csv
 ```
 
 Rebuild the pipeline from scratch (results CSV → ratings → params → forecast):
 
 ```
 curl -sL -o data/raw/results.csv https://raw.githubusercontent.com/martj42/international_results/master/results.csv
-set PYTHONPATH=src
 .venv\Scripts\python -m wcsim.build_ratings
 .venv\Scripts\python -m wcsim.build_params
-.venv\Scripts\python -m wcsim.forecast        # writes FORECAST.md + stage_probabilities.csv
+.venv\Scripts\python -m wcsim.forecast
 .venv\Scripts\python -m wcsim.backtest        # optional: 2018/2022 frozen-Elo validation
 ```
 
