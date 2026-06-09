@@ -35,6 +35,7 @@ Run the forecast (optional args: n_sims, seed — defaults 100000, 2026):
 
 ```
 .venv\Scripts\python -m wcsim.forecast        # writes FORECAST.md + stage_probabilities.csv
+.venv\Scripts\python -m wcsim.match_odds      # writes group_match_odds.csv (per-fixture 1X2, exact)
 ```
 
 Rebuild the pipeline from scratch (results CSV → ratings → params → forecast):
